@@ -1,0 +1,28 @@
+plugins {
+    // see https://fabricmc.net/develop/ for new versions
+    id 'fabric-loom' version '1.8-SNAPSHOT' apply false
+    // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
+    id 'net.neoforged.moddev' version '2.0.49-beta' apply false
+}
+
+subprojects {
+    def product = project.name.substring(0, project.name.lastIndexOf('-'))
+    def productIds = [
+            core: 'minimapshapes_core',
+            journeymap: 'minimapshapes_journeymap',
+            xaero: 'minimapshapes_xaero'
+    ]
+    def productNames = [
+            core: 'Minimap Shapes Core',
+            journeymap: 'Minimap Shapes for JourneyMap',
+            xaero: "Minimap Shapes for Xaero's Minimap"
+    ]
+    def productDescriptions = [
+            core: 'Shape selection, previews, and geometry shared by the minimap shape add-ons.',
+            journeymap: 'Adds rounded-square, hexagonal, and octagonal JourneyMap minimaps.',
+            xaero: "Adds rounded-square, hexagonal, octagonal, horizontal, and vertical shapes to Xaero's Minimap."
+    ]
+    ext.mod_id = productIds[product]
+    ext.mod_name = productNames[product]
+    description = productDescriptions[product]
+}

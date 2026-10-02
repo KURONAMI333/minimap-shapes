@@ -1,0 +1,45 @@
+apply from: rootProject.file('gradle/product-sources.gradle')
+
+def product = project.name.substring(0, project.name.lastIndexOf('-'))
+
+configurations { journeyMapBundle }
+
+neoForge {
+    version = neoforge_version
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        configureEach {
+            ideName = "NeoForge ${it.name.capitalize()} (${project.path})"
+        }
+        client { client() }
+    }
+    mods {
+        "${mod_id}" { sourceSet sourceSets.main }
+    }
+}
+
+dependencies {
+    if (product != 'core') {
+        compileOnly(project(':core-neoforge')) {
+            capabilities { requireCapability("${group}:minimapshapes_core") }
+        }
+    }
+    if (product == 'journeymap') {
+        compileOnly 'maven.modrinth:journeymap:1.21.1-6.0.9+neoforge'
+        compileOnly files(provider {
+            zipTree(configurations.journeyMapBundle.singleFile).matching {
+                include 'META-INF/jarjar/journeymap-api-neoforge-*.jar'
+            }.files
+        })
+        journeyMapBundle 'maven.modrinth:journeymap:1.21.1-6.0.9+neoforge'
+    }
+    if (product == 'xaero') {
+        compileOnly 'maven.modrinth:xaeros-minimap:neoforge-1.21.1-26.5.0'
+    }
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
+    compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+    annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+}

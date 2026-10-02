@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.kuronami.minimapshapes.xaero.mixin",
+  "refmap": "${mod_id}.refmap.json",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [],
+  "client": [
+    "XaeroRendererMixin",
+    "XaeroHelperMixin",
+    "XaeroOverMapMixin",
+    "XaeroFboMixin",
+    "XaeroSafeModeMixin"
+  ],
+  "injectors": {"defaultRequire": 1}
+}

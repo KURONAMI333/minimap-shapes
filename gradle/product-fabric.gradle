@@ -1,0 +1,49 @@
+apply from: rootProject.file('gradle/product-sources.gradle')
+
+def product = project.name.substring(0, project.name.lastIndexOf('-'))
+
+configurations { journeyMapBundle }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    if (product != 'core') {
+        compileOnly(project(':core-fabric')) {
+            capabilities { requireCapability("${group}:minimapshapes_core") }
+        }
+    }
+    if (product == 'journeymap') {
+        compileOnly 'maven.modrinth:journeymap:1.21.1-6.0.9+fabric'
+        compileOnly files(provider {
+            zipTree(configurations.journeyMapBundle.singleFile).matching {
+                include 'META-INF/jars/journeymap-api-fabric-*.jar'
+            }.files
+        })
+        journeyMapBundle 'maven.modrinth:journeymap:1.21.1-6.0.9+fabric'
+    }
+    if (product == 'xaero') {
+        compileOnly 'maven.modrinth:xaeros-minimap:fabric-1.21.1-26.5.0'
+    }
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
+    compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+    annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+}
+
+loom {
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+    runs {
+        client {
+            client()
+            setConfigName("${mod_name} Fabric Client")
+            ideConfigGenerated(true)
+            runDir('runs/client')
+        }
+    }
+}

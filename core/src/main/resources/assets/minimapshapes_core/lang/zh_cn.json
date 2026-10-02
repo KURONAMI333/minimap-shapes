@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "JourneyMap 小地图形状",
+  "minimapshapes.screen.title.xaero": "Xaero 小地图形状",
+  "minimapshapes.screen.no_host": "未加载对应的小地图附加模组。",
+  "minimapshapes.shape.standard": "默认",
+  "minimapshapes.shape.rounded_square": "圆角方形",
+  "minimapshapes.shape.hexagon": "六边形",
+  "minimapshapes.shape.octagon": "八边形",
+  "minimapshapes.shape.horizontal_rectangle": "横向矩形",
+  "minimapshapes.shape.vertical_rectangle": "纵向矩形",
+  "key.minimapshapes_journeymap.open": "JourneyMap 小地图形状",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Xaero 小地图形状",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

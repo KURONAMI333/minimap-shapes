@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "Forma del minimapa de JourneyMap",
+  "minimapshapes.screen.title.xaero": "Forma del minimapa de Xaero",
+  "minimapshapes.screen.no_host": "No se ha cargado el complemento del minimapa.",
+  "minimapshapes.shape.standard": "Predeterminada",
+  "minimapshapes.shape.rounded_square": "Cuadrado redondeado",
+  "minimapshapes.shape.hexagon": "Hexágono",
+  "minimapshapes.shape.octagon": "Octágono",
+  "minimapshapes.shape.horizontal_rectangle": "Rectángulo horizontal",
+  "minimapshapes.shape.vertical_rectangle": "Rectángulo vertical",
+  "key.minimapshapes_journeymap.open": "Forma del minimapa de JourneyMap",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Forma del minimapa de Xaero",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

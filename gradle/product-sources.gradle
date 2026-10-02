@@ -1,0 +1,32 @@
+def product = project.name.substring(0, project.name.lastIndexOf('-'))
+def sources
+switch (product) {
+    case 'core':
+        sources = rootProject.fileTree('common/src/main/java') {
+            include 'com/kuronami/minimapshapes/ClientShapes.java'
+            include 'com/kuronami/minimapshapes/Constants.java'
+            include 'com/kuronami/minimapshapes/Shape.java'
+            include 'com/kuronami/minimapshapes/ShapeGeometry.java'
+            include 'com/kuronami/minimapshapes/ShapeScreen.java'
+            include 'com/kuronami/minimapshapes/ShapeSettings.java'
+            include 'com/kuronami/minimapshapes/ShapeTexture.java'
+        }
+        break
+    case 'journeymap':
+        sources = rootProject.fileTree('journeymap/src/main/java') { include '**/*.java' }
+        break
+    case 'xaero':
+        sources = rootProject.fileTree('xaero/src/main/java') { include '**/*.java' }
+        break
+    default:
+        throw new GradleException("Unknown minimap shape product: ${product}")
+}
+
+tasks.named('compileJava', JavaCompile) {
+    source sources
+}
+tasks.named('sourcesJar', Jar) {
+    from sources
+}
+
+sourceSets.main.resources.srcDir(rootProject.file("${product}/src/main/resources"))

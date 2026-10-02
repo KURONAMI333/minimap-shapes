@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "JourneyMap minimap shape",
+  "minimapshapes.screen.title.xaero": "Xaero minimap shape",
+  "minimapshapes.screen.no_host": "The matching minimap add-on is not loaded.",
+  "minimapshapes.shape.standard": "Default",
+  "minimapshapes.shape.rounded_square": "Rounded square",
+  "minimapshapes.shape.hexagon": "Hexagon",
+  "minimapshapes.shape.octagon": "Octagon",
+  "minimapshapes.shape.horizontal_rectangle": "Horizontal rectangle",
+  "minimapshapes.shape.vertical_rectangle": "Vertical rectangle",
+  "key.minimapshapes_journeymap.open": "JourneyMap minimap shape",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Xaero minimap shape",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

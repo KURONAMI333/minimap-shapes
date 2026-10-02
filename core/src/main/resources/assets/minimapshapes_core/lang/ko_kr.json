@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "JourneyMap 미니맵 모양",
+  "minimapshapes.screen.title.xaero": "Xaero 미니맵 모양",
+  "minimapshapes.screen.no_host": "해당 미니맵 애드온이 로드되지 않았습니다.",
+  "minimapshapes.shape.standard": "기본값",
+  "minimapshapes.shape.rounded_square": "둥근 사각형",
+  "minimapshapes.shape.hexagon": "육각형",
+  "minimapshapes.shape.octagon": "팔각형",
+  "minimapshapes.shape.horizontal_rectangle": "가로 직사각형",
+  "minimapshapes.shape.vertical_rectangle": "세로 직사각형",
+  "key.minimapshapes_journeymap.open": "JourneyMap 미니맵 모양",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Xaero 미니맵 모양",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

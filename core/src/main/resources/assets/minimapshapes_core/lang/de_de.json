@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "JourneyMap-Minimap-Form",
+  "minimapshapes.screen.title.xaero": "Xaero-Minimap-Form",
+  "minimapshapes.screen.no_host": "Das passende Minimap-Add-on ist nicht geladen.",
+  "minimapshapes.shape.standard": "Standard",
+  "minimapshapes.shape.rounded_square": "Abgerundetes Quadrat",
+  "minimapshapes.shape.hexagon": "Sechseck",
+  "minimapshapes.shape.octagon": "Achteck",
+  "minimapshapes.shape.horizontal_rectangle": "Waagerechtes Rechteck",
+  "minimapshapes.shape.vertical_rectangle": "Senkrechtes Rechteck",
+  "key.minimapshapes_journeymap.open": "JourneyMap-Minimap-Form",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Xaero-Minimap-Form",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

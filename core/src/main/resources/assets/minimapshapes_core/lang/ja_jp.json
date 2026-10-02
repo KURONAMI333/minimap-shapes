@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "JourneyMapのミニマップ形状",
+  "minimapshapes.screen.title.xaero": "Xaeroのミニマップ形状",
+  "minimapshapes.screen.no_host": "対応するミニマップ用アドオンが読み込まれていません。",
+  "minimapshapes.shape.standard": "標準に戻す",
+  "minimapshapes.shape.rounded_square": "角丸四角形",
+  "minimapshapes.shape.hexagon": "六角形",
+  "minimapshapes.shape.octagon": "八角形",
+  "minimapshapes.shape.horizontal_rectangle": "横長の長方形",
+  "minimapshapes.shape.vertical_rectangle": "縦長の長方形",
+  "key.minimapshapes_journeymap.open": "JourneyMapのミニマップ形状",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Xaeroのミニマップ形状",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

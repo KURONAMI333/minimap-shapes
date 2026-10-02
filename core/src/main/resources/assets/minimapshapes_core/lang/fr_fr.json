@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "Forme de la minicarte JourneyMap",
+  "minimapshapes.screen.title.xaero": "Forme de la minicarte Xaero",
+  "minimapshapes.screen.no_host": "L’extension de minicarte correspondante n’est pas chargée.",
+  "minimapshapes.shape.standard": "Par défaut",
+  "minimapshapes.shape.rounded_square": "Carré arrondi",
+  "minimapshapes.shape.hexagon": "Hexagone",
+  "minimapshapes.shape.octagon": "Octogone",
+  "minimapshapes.shape.horizontal_rectangle": "Rectangle horizontal",
+  "minimapshapes.shape.vertical_rectangle": "Rectangle vertical",
+  "key.minimapshapes_journeymap.open": "Forme de la minicarte JourneyMap",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Forme de la minicarte Xaero",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

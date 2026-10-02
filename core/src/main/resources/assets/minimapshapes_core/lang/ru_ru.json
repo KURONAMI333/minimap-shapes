@@ -1,0 +1,15 @@
+{
+  "minimapshapes.screen.title.journeymap": "Форма мини-карты JourneyMap",
+  "minimapshapes.screen.title.xaero": "Форма мини-карты Xaero",
+  "minimapshapes.screen.no_host": "Соответствующее дополнение мини-карты не загружено.",
+  "minimapshapes.shape.standard": "По умолчанию",
+  "minimapshapes.shape.rounded_square": "Скруглённый квадрат",
+  "minimapshapes.shape.hexagon": "Шестиугольник",
+  "minimapshapes.shape.octagon": "Восьмиугольник",
+  "minimapshapes.shape.horizontal_rectangle": "Горизонтальный прямоугольник",
+  "minimapshapes.shape.vertical_rectangle": "Вертикальный прямоугольник",
+  "key.minimapshapes_journeymap.open": "Форма мини-карты JourneyMap",
+  "key.categories.minimapshapes_journeymap": "JourneyMap",
+  "key.minimapshapes_xaero.open": "Форма мини-карты Xaero",
+  "key.categories.minimapshapes_xaero": "Xaero"
+}

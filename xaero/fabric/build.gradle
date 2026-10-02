@@ -1,0 +1,5 @@
+plugins {
+    id 'multiloader-common'
+    id 'fabric-loom'
+}
+apply from: rootProject.file('gradle/product-fabric.gradle')
