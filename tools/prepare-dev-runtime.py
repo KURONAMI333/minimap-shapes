@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tomllib
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,10 +33,16 @@ HOSTS = {
         "xaero": ("xaerominimap-neoforge-1.21.1-26.5.0.jar", "667105d8fdca64b27b29d8e0b88e67e7342038d3fb4edc4129bf452b601c6d20"),
     },
 }
-JEI = {
-    "fabric": ("jei-1.21.1-fabric-19.27.0.336.jar", "1d47dab86cee6d68e0887ec5e14deee125d3e2ea92c5ecedbb57f8f60aafa709"),
-    "neoforge": ("jei-1.21.1-neoforge-19.27.0.336.jar", "2b6d84df11ab2bb94a75be8bac6790bfbb2c0112a1622cd5f5f234468a196721"),
+JEI_CANDIDATES = {
+    "fabric": ((WORKSPACE / "_tools/devmods/jei-1.21.1-fabric-19.27.0.336.jar",
+                "1d47dab86cee6d68e0887ec5e14deee125d3e2ea92c5ecedbb57f8f60aafa709"),),
+    "neoforge": (
+        (WORKSPACE / "_tools/devmods/jei-1.21.1-neoforge-19.27.0.336.jar",
+         "2b6d84df11ab2bb94a75be8bac6790bfbb2c0112a1622cd5f5f234468a196721"),
+    ),
 }
+TARGET_VERSIONS = {"minecraft": "1.21.1", "neoforge": "21.1.227", "fabricloader": "0.16.9",
+                   "fabric-api": "0.109.0", "java": "21", "javafml": "4"}
 SCENARIOS = tuple((loader, name) for loader in ("fabric", "neoforge") for name in ("journeymap", "xaero", "both"))
 MANIFEST = ".minimapshapes-dev-runtime.json"
 
@@ -46,6 +53,96 @@ def digest(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             sha.update(block)
     return sha.hexdigest()
+
+
+def version_numbers(value: str) -> tuple[int, ...]:
+    match = re.fullmatch(r"(\d+(?:\.\d+)*)(?:\+[^\s]+)?", value.strip())
+    if match is None:
+        raise ValueError(f"Unsupported version in JEI metadata: {value!r}")
+    return tuple(int(part) for part in match.group(1).split("."))
+
+
+def compare_versions(left: str, right: str) -> int:
+    a, b = version_numbers(left), version_numbers(right)
+    length = max(len(a), len(b))
+    return (a + (0,) * (length - len(a)) > b + (0,) * (length - len(b))) - (
+        a + (0,) * (length - len(a)) < b + (0,) * (length - len(b)))
+
+
+def accepts_range(spec: str, version: str) -> bool:
+    spec = spec.strip()
+    if spec == "*":
+        return True
+    if spec.startswith(">="):
+        return compare_versions(version, spec[2:]) >= 0
+    if spec.startswith("[") or spec.startswith("("):
+        if not spec.endswith(("]", ")")):
+            raise ValueError(f"Malformed JEI version range: {spec!r}")
+        body = spec[1:-1]
+        if "," not in body:
+            if spec[0] != "[" or spec[-1] != "]":
+                raise ValueError(f"Malformed exact JEI version: {spec!r}")
+            return compare_versions(version, body) == 0
+        lower, upper = (part.strip() for part in body.split(",", 1))
+        if lower and (compare_versions(version, lower) < 0 or
+                      (compare_versions(version, lower) == 0 and spec[0] == "(")):
+            return False
+        if upper and (compare_versions(version, upper) > 0 or
+                      (compare_versions(version, upper) == 0 and spec[-1] == ")")):
+            return False
+        return True
+    return compare_versions(version, spec) == 0
+
+
+def validate_jei_metadata(path: Path, loader: str) -> None:
+    """Reject a pinned JEI file whose own required dependencies exclude this dev run."""
+    with zipfile.ZipFile(path) as archive:
+        if loader == "fabric":
+            metadata = json.loads(archive.read("fabric.mod.json"))
+            if metadata.get("id") != "jei":
+                raise RuntimeError(f"Fabric JEI mod id is not jei: {path}")
+            depends = metadata.get("depends", {})
+            for dependency in ("fabricloader", "fabric-api", "java"):
+                spec = depends.get(dependency)
+                if not isinstance(spec, str) or not accepts_range(spec, TARGET_VERSIONS[dependency]):
+                    raise RuntimeError(f"Fabric JEI requires incompatible {dependency} {spec!r}: {path}")
+            minecraft_spec = depends.get("minecraft")
+            if minecraft_spec is not None and (not isinstance(minecraft_spec, str) or
+                                               not accepts_range(minecraft_spec, TARGET_VERSIONS["minecraft"])):
+                raise RuntimeError(f"Fabric JEI excludes Minecraft 1.21.1: {path}")
+            # This pinned Fabric JAR has no Minecraft dependency field; its filename,
+            # exact SHA-256 and loader requirements are the available static evidence.
+        else:
+            metadata = tomllib.loads(archive.read("META-INF/neoforge.mods.toml").decode("utf-8"))
+            if not any(mod.get("modId") == "jei" for mod in metadata.get("mods", [])):
+                raise RuntimeError(f"NeoForge JEI mod id is not jei: {path}")
+            loader_spec = metadata.get("loaderVersion")
+            if not isinstance(loader_spec, str) or not accepts_range(loader_spec, TARGET_VERSIONS["javafml"]):
+                raise RuntimeError(f"NeoForge JEI excludes javafml {TARGET_VERSIONS['javafml']}: {path}")
+            required = {entry.get("modId"): entry.get("versionRange")
+                        for entry in metadata.get("dependencies", {}).get("jei", [])
+                        if entry.get("type") == "required"}
+            for dependency in ("minecraft", "neoforge"):
+                spec = required.get(dependency)
+                if not isinstance(spec, str) or not accepts_range(spec, TARGET_VERSIONS[dependency]):
+                    raise RuntimeError(f"NeoForge JEI excludes {dependency} {TARGET_VERSIONS[dependency]} "
+                                       f"(requires {spec!r}): {path}")
+            unsupported = sorted(set(required) - {"minecraft", "neoforge"})
+            if unsupported:
+                raise RuntimeError(f"NeoForge JEI needs unstaged required mods {unsupported}: {path}")
+
+
+def select_jei(loader: str) -> tuple[Path, str]:
+    rejected = []
+    for path, expected in JEI_CANDIDATES[loader]:
+        try:
+            if not path.is_file() or digest(path) != expected:
+                raise RuntimeError("missing or SHA-256 mismatch")
+            validate_jei_metadata(path, loader)
+            return path, expected
+        except (RuntimeError, ValueError, KeyError, zipfile.BadZipFile, tomllib.TOMLDecodeError) as error:
+            rejected.append(f"{path.name}: {error}")
+    raise RuntimeError(f"No compatible {loader} JEI for MC 1.21.1; " + "; ".join(rejected))
 
 
 def java_env() -> dict[str, str]:
@@ -105,11 +202,8 @@ def source_jars(loader: str, scenario: str) -> tuple[str, dict[str, tuple[Path, 
         if not path.is_file() or digest(path) != expected:
             raise RuntimeError(f"Exact host JAR missing or modified: {path}")
         staged[filename] = (path, expected)
-    filename, expected = JEI[loader]
-    path = WORKSPACE / "_tools/devmods" / filename
-    if not path.is_file() or digest(path) != expected:
-        raise RuntimeError(f"Exact JEI JAR missing or modified: {path}")
-    staged[filename] = (path, expected)
+    path, expected = select_jei(loader)
+    staged[path.name] = (path, expected)
     return active, staged
 
 
@@ -152,10 +246,14 @@ def main() -> int:
     if not re.fullmatch(r"[A-Za-z0-9._-]{1,64}", args.owner):
         raise ValueError("Owner tag must be 1-64 letters, digits, dots, underscores or hyphens")
     chosen = selected_scenarios(args.scenario)
-    run_dirs, fabric_api = gradle_report()
-    plans = []
+    sources = []
     for loader, scenario in chosen:
         active, staged = source_jars(loader, scenario)
+        sources.append((loader, scenario, active, staged))
+    # Resolve Gradle only after every source JAR has passed compatibility checks.
+    run_dirs, fabric_api = gradle_report()
+    plans = []
+    for loader, scenario, active, staged in sources:
         task = f":{active}-{loader}:runClient"
         run_dir = run_dirs[task.rsplit(":", 1)[0]]
         check_directory(run_dir, staged, args.action == "prepare")
