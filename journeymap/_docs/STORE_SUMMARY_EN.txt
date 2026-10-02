@@ -1,0 +1,1 @@
+Choose rounded-square, hexagonal, or octagonal minimaps in JourneyMap and switch back to its default shape.

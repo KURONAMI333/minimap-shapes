@@ -1,0 +1,14 @@
+// Read only: resolve each Gradle runClient directory without executing runClient.
+gradle.projectsEvaluated {
+    if (gradle.rootProject.name != 'minimap-shapes-suite') return
+    for (loader in ['fabric', 'neoforge']) {
+        for (product in ['core', 'journeymap', 'xaero']) {
+            def project = gradle.rootProject.project(":${product}-${loader}")
+            def task = project.tasks.named('runClient').get()
+            def directory = loader == 'fabric'
+                    ? new File(project.projectDir, task.internalRunDir.get().toString())
+                    : task.gameDirectory.get().asFile
+            println "MMS_RUN_DIR|${project.path}|${directory.canonicalPath}"
+        }
+    }
+}

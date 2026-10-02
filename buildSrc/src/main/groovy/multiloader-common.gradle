@@ -63,13 +63,13 @@ repositories {
 }
 
 sourcesJar {
-    from(rootProject.file('LICENSE')) {
+    from(project.licenseFile) {
         rename { "${it}_${mod_name}" }
     }
 }
 
 jar {
-    from(rootProject.file('LICENSE')) {
+    from(project.licenseFile) {
         rename { "${it}_${mod_name}" }
     }
 

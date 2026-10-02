@@ -24,5 +24,7 @@ subprojects {
     ]
     ext.mod_id = productIds[product]
     ext.mod_name = productNames[product]
+    ext.license = product == 'core' ? 'MIT' : 'All Rights Reserved'
+    ext.licenseFile = product == 'core' ? rootProject.file('core/LICENSE') : rootProject.file('LICENSE')
     description = productDescriptions[product]
 }
