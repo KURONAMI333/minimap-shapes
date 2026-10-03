@@ -42,7 +42,11 @@ JEI_CANDIDATES = {
     ),
 }
 TARGET_VERSIONS = {"minecraft": "1.21.1", "neoforge": "21.1.227", "fabricloader": "0.16.9",
-                   "fabric-api": "0.109.0", "java": "21", "javafml": "4"}
+                   "fabric-api": "0.109.0", "java": "21", "javafml": "4.0.42"}
+# Proven for this exact Minecraft/NeoForge/FML combination by the actual FML
+# VersionSupportMatrix. Do not apply these aliases to other versions or loaders.
+NEOFORGE_MATRIX_TARGET = ("1.21.1", "21.1.227", "4.0.42")
+NEOFORGE_MOD_ALIASES = {"minecraft": "1.21", "neoforge": "21.0.166"}
 SCENARIOS = tuple((loader, name) for loader in ("fabric", "neoforge") for name in ("journeymap", "xaero", "both"))
 MANIFEST = ".minimapshapes-dev-runtime.json"
 
@@ -56,7 +60,7 @@ def digest(path: Path) -> str:
 
 
 def version_numbers(value: str) -> tuple[int, ...]:
-    match = re.fullmatch(r"(\d+(?:\.\d+)*)(?:\+[^\s]+)?", value.strip())
+    match = re.fullmatch(r"(\d+(?:\.\d+)*)(?:-beta)?(?:\+[^\s]+)?", value.strip())
     if match is None:
         raise ValueError(f"Unsupported version in JEI metadata: {value!r}")
     return tuple(int(part) for part in match.group(1).split("."))
@@ -65,8 +69,13 @@ def version_numbers(value: str) -> tuple[int, ...]:
 def compare_versions(left: str, right: str) -> int:
     a, b = version_numbers(left), version_numbers(right)
     length = max(len(a), len(b))
-    return (a + (0,) * (length - len(a)) > b + (0,) * (length - len(b))) - (
-        a + (0,) * (length - len(a)) < b + (0,) * (length - len(b)))
+    padded_a, padded_b = a + (0,) * (length - len(a)), b + (0,) * (length - len(b))
+    if padded_a != padded_b:
+        return (padded_a > padded_b) - (padded_a < padded_b)
+    # The only observed qualifier is Maven's beta lower bound. A release of
+    # the same numeric version sorts after beta; unknown qualifiers fail closed.
+    return (not left.strip().split("+", 1)[0].endswith("-beta")) - (
+        not right.strip().split("+", 1)[0].endswith("-beta"))
 
 
 def accepts_range(spec: str, version: str) -> bool:
@@ -92,6 +101,15 @@ def accepts_range(spec: str, version: str) -> bool:
             return False
         return True
     return compare_versions(version, spec) == 0
+
+
+def accepts_neoforge_mod_range(dependency: str, spec: str) -> bool:
+    if accepts_range(spec, TARGET_VERSIONS[dependency]):
+        return True
+    actual_target = tuple(TARGET_VERSIONS[key] for key in ("minecraft", "neoforge", "javafml"))
+    if actual_target != NEOFORGE_MATRIX_TARGET or dependency not in NEOFORGE_MOD_ALIASES:
+        return False
+    return accepts_range(spec, NEOFORGE_MOD_ALIASES[dependency])
 
 
 def validate_jei_metadata(path: Path, loader: str) -> None:
@@ -124,12 +142,13 @@ def validate_jei_metadata(path: Path, loader: str) -> None:
                         if entry.get("type") == "required"}
             for dependency in ("minecraft", "neoforge"):
                 spec = required.get(dependency)
-                if not isinstance(spec, str) or not accepts_range(spec, TARGET_VERSIONS[dependency]):
+                if not isinstance(spec, str) or not accepts_neoforge_mod_range(dependency, spec):
                     raise RuntimeError(f"NeoForge JEI excludes {dependency} {TARGET_VERSIONS[dependency]} "
                                        f"(requires {spec!r}): {path}")
             unsupported = sorted(set(required) - {"minecraft", "neoforge"})
             if unsupported:
-                raise RuntimeError(f"NeoForge JEI needs unstaged required mods {unsupported}: {path}")
+                raise RuntimeError(f"NeoForge JEI has required dependencies not evaluated by this setup "
+                                   f"{unsupported}: {path}")
 
 
 def select_jei(loader: str) -> tuple[Path, str]:
