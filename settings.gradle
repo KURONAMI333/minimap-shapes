@@ -25,6 +25,13 @@ pluginManagement {
                 includeGroupAndSubgroups("org.spongepowered")
             }
         }
+        // Forge1.20.1 Librarian plugin marker and implementation live here.
+        exclusiveContent {
+            forRepository {
+                maven { name = 'ParchmentMC'; url = uri('https://maven.parchmentmc.org') }
+            }
+            filter { includeGroupAndSubgroups('org.parchmentmc') }
+        }
         exclusiveContent {
             forRepository {
                 maven {
@@ -47,10 +54,15 @@ plugins {
 rootProject.name = 'minimap-shapes-suite'
 include('core-fabric', 'core-neoforge',
         'journeymap-fabric', 'journeymap-neoforge',
-        'xaero-fabric', 'xaero-neoforge')
+        'xaero-fabric', 'xaero-neoforge',
+        'core-forge1201', 'journeymap-forge1201', 'xaero-forge1201')
 project(':core-fabric').projectDir = file('core/fabric')
 project(':core-neoforge').projectDir = file('core/neoforge')
 project(':journeymap-fabric').projectDir = file('journeymap/fabric')
 project(':journeymap-neoforge').projectDir = file('journeymap/neoforge')
 project(':xaero-fabric').projectDir = file('xaero/fabric')
 project(':xaero-neoforge').projectDir = file('xaero/neoforge')
+
+project(':core-forge1201').projectDir = file('core/forge1201')
+project(':journeymap-forge1201').projectDir = file('journeymap/forge1201')
+project(':xaero-forge1201').projectDir = file('xaero/forge1201')

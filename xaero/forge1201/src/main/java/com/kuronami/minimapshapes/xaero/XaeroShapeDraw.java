@@ -23,7 +23,8 @@ public final class XaeroShapeDraw {
         int segments = Math.max(64, originalSegments);
         float half = diameter / 2;
         Matrix4f matrix = pose.last().pose();
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES,
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.TRIANGLES,
                 DefaultVertexFormat.POSITION_TEX);
         List<Double> angles = samples(shape, startAngle, startAngle + TAU, segments);
         for (int i = 1; i < angles.size(); i++) {
@@ -32,11 +33,11 @@ public final class XaeroShapeDraw {
                     atlasSize, shape, angles.get(i));
             vertex(buffer, matrix, x, y, textureX, textureY, half, textureHeight,
                     atlasSize, shape, angles.get(i - 1));
-            buffer.addVertex(matrix, x + half, y + half, 0)
-                    .setUv((textureX + half) / atlasSize,
-                            (textureY + textureHeight / 2) / atlasSize);
+            buffer.vertex(matrix, x + half, y + half, 0)
+                    .uv((textureX + half) / atlasSize,
+                            (textureY + textureHeight / 2) / atlasSize).endVertex();
         }
-        BufferUploader.drawWithShader(buffer.build());
+        BufferUploader.drawWithShader(buffer.end());
     }
 
     private static void vertex(BufferBuilder buffer, Matrix4f matrix, float x, float y,
@@ -45,9 +46,9 @@ public final class XaeroShapeDraw {
         double radial = XaeroViewport.radius(shape, theta - Math.PI / 2);
         float dx = (float) (half * radial * Math.sin(theta));
         float dy = (float) (-half * radial * Math.cos(theta));
-        buffer.addVertex(matrix, x + half + dx, y + half + dy, 0)
-                .setUv((textureX + half + dx) / atlasSize,
-                        (textureY + textureHeight * (0.5f - dy / (2 * half))) / atlasSize);
+        buffer.vertex(matrix, x + half + dx, y + half + dy, 0)
+                .uv((textureX + half + dx) / atlasSize,
+                        (textureY + textureHeight * (0.5f - dy / (2 * half))) / atlasSize).endVertex();
     }
 
     public static void frame(Shape shape, PoseStack pose, boolean resetTexture, boolean reverseTexture,
@@ -60,7 +61,8 @@ public final class XaeroShapeDraw {
         end = Math.max(start, Math.min(end, segments));
         if (end == start) return;
         Matrix4f matrix = pose.last().pose();
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS,
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS,
                 DefaultVertexFormat.POSITION_TEX);
         float half = diameter / 2;
         float segmentLength = (float) (TAU * (half + thickness) / segments);
@@ -81,7 +83,7 @@ public final class XaeroShapeDraw {
             frameVertex(buffer, matrix, x, y, half, thickness, shape, b, uB, textureY, atlasSize);
             frameVertex(buffer, matrix, x, y, half, thickness, shape, a, uA, textureY, atlasSize);
         }
-        BufferUploader.drawWithShader(buffer.build());
+        BufferUploader.drawWithShader(buffer.end());
     }
 
     private static float frameU(float segment, int start, float segmentLength, int textureX,
@@ -101,14 +103,14 @@ public final class XaeroShapeDraw {
                                     double theta, float u, float v, float atlasSize) {
         if (shape == Shape.HORIZONTAL_RECTANGLE || shape == Shape.VERTICAL_RECTANGLE) {
             var point = XaeroRectangleFrame.vertex(shape, half, border, theta, XaeroViewport.shortAxis());
-            buffer.addVertex(matrix, x + half + (float) point.x(), y + half + (float) point.y(), 0)
-                    .setUv(u, v / atlasSize);
+            buffer.vertex(matrix, x + half + (float) point.x(), y + half + (float) point.y(), 0)
+                    .uv(u, v / atlasSize).endVertex();
             return;
         }
         double radius = half * XaeroViewport.radius(shape, theta - Math.PI / 2) + border;
-        buffer.addVertex(matrix, x + half + (float) (radius * Math.sin(theta)),
+        buffer.vertex(matrix, x + half + (float) (radius * Math.sin(theta)),
                         y + half - (float) (radius * Math.cos(theta)), 0)
-                .setUv(u, v / atlasSize);
+                .uv(u, v / atlasSize).endVertex();
     }
 
     /** Insert exact corners so an arbitrary Xaero circle seam cannot round polygon vertices. */

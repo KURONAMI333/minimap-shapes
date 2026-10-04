@@ -1,0 +1,122 @@
+// Applied only by core/journeymap/xaero-forge1201.
+def product = project.name.substring(0, project.name.lastIndexOf('-'))
+if (!(product in ['core', 'journeymap', 'xaero'])) throw new GradleException("Unknown product: ${product}")
+def mc = '1.20.1'
+def forge = '47.4.13'
+group = rootProject.group
+version = rootProject.version
+base.archivesName = "${mod_id}-forge-${mc}"
+java { toolchain.languageVersion = JavaLanguageVersion.of(17); withSourcesJar() }
+// Forge 47.4.13 and both host jars do not bundle MixinExtras; JM's injector needs it.
+if (product == 'journeymap') jarJar.enable()
+minecraft {
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods {
+                "${mod_id}" { source sourceSets.main }
+                if (product != 'core') minimapshapes_core { source project(':core-forge1201').sourceSets.main }
+            }
+            if (product != 'core') arg "-mixin.config=${mod_id}.mixins.json"
+        }
+        client { }
+    }
+}
+repositories {
+    mavenCentral()
+    maven { name = 'Forge'; url = 'https://maven.minecraftforge.net' }
+    maven { name = 'ParchmentMC'; url = 'https://maven.parchmentmc.org' }
+    maven { name = 'Sponge'; url = 'https://repo.spongepowered.org/repository/maven-public' }
+    // ForgeGradle requires external modules and its generated _mapped_ repository.
+    // Scope the local origin jars to this group without excluding that repository.
+    flatDir {
+        name = 'PinnedMapHosts'
+        dirs rootProject.file('libs-local')
+        content { includeGroup('local.minimapshapes.hosts') }
+    }
+}
+// Canonical 1.21.1 code is reused except the two same-name MC API overlays.
+def canonicalSources
+switch (product) {
+    case 'core':
+        canonicalSources = rootProject.fileTree('common/src/main/java') {
+            include 'com/kuronami/minimapshapes/ClientShapes.java'
+            include 'com/kuronami/minimapshapes/Constants.java'
+            include 'com/kuronami/minimapshapes/Shape.java'
+            include 'com/kuronami/minimapshapes/ShapeGeometry.java'
+            include 'com/kuronami/minimapshapes/ShapeSettings.java'
+            include 'com/kuronami/minimapshapes/ShapeTexture.java'
+            exclude 'com/kuronami/minimapshapes/ShapeScreen.java'
+        }
+        tasks.named('processResources', ProcessResources) {
+            from(rootProject.file('core/src/main/resources/assets')) { into 'assets' }
+        }
+        break
+    case 'journeymap':
+        canonicalSources = rootProject.fileTree('journeymap/src/main/java') { include '**/*.java' }
+        break
+    case 'xaero':
+        canonicalSources = rootProject.fileTree('xaero/src/main/java') {
+            include '**/*.java'
+            exclude 'com/kuronami/minimapshapes/xaero/XaeroShapeDraw.java'
+        }
+        break
+}
+tasks.named('compileJava', JavaCompile) { source canonicalSources; options.encoding = 'UTF-8'; options.release = 17 }
+tasks.named('sourcesJar', Jar) { from canonicalSources }
+['apiElements', 'runtimeElements', 'sourcesElements'].each { variant ->
+    configurations."${variant}".outgoing.capability("${group}:${mod_id}:${version}")
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc}-${forge}"
+    if (product != 'core') {
+        compileOnly(project(':core-forge1201')) {
+            capabilities { requireCapability("${group}:minimapshapes_core") }
+        }
+        runtimeOnly(project(':core-forge1201')) {
+            capabilities { requireCapability("${group}:minimapshapes_core") }
+        }
+        compileOnly 'org.spongepowered:mixin:0.8.5'
+        if (product == 'journeymap') {
+            compileOnly(annotationProcessor('io.github.llamalad7:mixinextras-common:0.5.5'))
+            implementation(jarJar('io.github.llamalad7:mixinextras-forge:0.5.5')) {
+                jarJar.ranged(it, '[0.5.5,)')
+            }
+        }
+    }
+    if (product == 'journeymap') {
+        // The host supplies this nested API at runtime; javac needs its own classpath entry.
+        compileOnly fg.deobf('local.minimapshapes.hosts:journeymap-api-forge-1.20.1:2.0.0@jar')
+        compileOnly fg.deobf('local.minimapshapes.hosts:journeymap-forge-1.20.1:6.0.7@jar')
+        runtimeOnly fg.deobf('local.minimapshapes.hosts:journeymap-forge-1.20.1:6.0.7@jar')
+    }
+    if (product == 'xaero') {
+        compileOnly fg.deobf('local.minimapshapes.hosts:xaerominimap-forge-1.20.1:26.5.0@jar')
+        runtimeOnly fg.deobf('local.minimapshapes.hosts:xaerominimap-forge-1.20.1:26.5.0@jar')
+    }
+}
+tasks.named('processResources', ProcessResources) {
+    def props = [version: project.version, mod_id: mod_id, mod_name: mod_name,
+                 license: license, description: project.description]
+    inputs.properties(props)
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand(props) }
+}
+tasks.named('jar', Jar) {
+    from(licenseFile) { rename { "LICENSE_${mod_id}" } }
+    manifest {
+        attributes('Implementation-Title': mod_name, 'Implementation-Version': project.version,
+                'Implementation-Vendor': 'KURONAMI333', 'Built-On-Minecraft': mc)
+        if (product != 'core') attributes('MixinConfigs': "${mod_id}.mixins.json")
+    }
+}
+tasks.named('sourcesJar', Jar) { from(licenseFile) { rename { "LICENSE_${mod_id}" } } }
+
+// Ship the reobfuscated jarJar artifact for JourneyMap, not the plain jar task output.
+if (product == 'journeymap') tasks.named('jarJar', Jar) {
+    from(licenseFile) { rename { "LICENSE_${mod_id}" } }
+    manifest.attributes('MixinConfigs': "${mod_id}.mixins.json")
+    finalizedBy 'reobfJarJar'
+}

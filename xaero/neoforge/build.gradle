@@ -3,3 +3,13 @@ plugins {
     id 'net.neoforged.moddev'
 }
 apply from: rootProject.file('gradle/product-neoforge.gradle')
+
+// Coreの既存JUnit導線と同じ、MC型を使わないXaero矩形枠の境界検査。
+dependencies {
+    testImplementation(project(':core-neoforge')) {
+        capabilities { requireCapability("${group}:minimapshapes_core") }
+    }
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.named('test', Test) { useJUnitPlatform() }

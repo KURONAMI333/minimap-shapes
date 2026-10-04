@@ -7,6 +7,12 @@
   "authors": ["${mod_author}"],
   "license": "${license}",
   "environment": "client",
+  "icon": "logo.png",
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/minimap-shapes-core",
+    "sources": "https://github.com/KURONAMI333/minimap-shapes",
+    "issues": "https://www.curseforge.com/minecraft/mc-mods/minimap-shapes-core/comments"
+  },
   "entrypoints": {"client": ["com.kuronami.minimapshapes.CoreFabric"]},
   "depends": {
     "fabricloader": ">=${fabric_loader_min_version}",

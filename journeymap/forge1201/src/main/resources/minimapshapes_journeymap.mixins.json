@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.kuronami.minimapshapes.journeymap.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [],
+  "client": [
+    "JourneyMapDisplayVarsMixin",
+    "JourneyMapFrameMixin",
+    "JourneyMapBoundaryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
