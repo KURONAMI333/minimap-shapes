@@ -6,6 +6,11 @@
   "description": "${description}",
   "authors": ["${mod_author}"],
   "license": "${license}",
+  "icon": "logo.png",
+  "contact": {
+    "homepage": "https://github.com/KURONAMI333/minimap-shapes",
+    "sources": "https://github.com/KURONAMI333/minimap-shapes"
+  },
   "environment": "client",
   "entrypoints": {"client": ["com.kuronami.minimapshapes.xaero.XaeroFabric"]},
   "mixins": ["${mod_id}.mixins.json"],
